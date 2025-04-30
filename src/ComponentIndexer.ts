@@ -64,13 +64,27 @@ export function refreshComponentIndex() {
   });
 }
 
-function getComponentId(componentPath: string): string | null {
+async function getComponentId(componentPath: string): Promise<string | null> {
   // Adjust this regex to match your project's structure
   const match = componentPath.match(/(?:\/|\\)([a-zA-Z0-9_]+)(?:\/|\\)components(?:\/|\\)(.+?)(?:\/|\\)([^\/\\]+)\.twig$/);
 
   if (match) {
-    const moduleName = match[1];
+    let moduleName = match[1];
     const componentName = match[3].replace(/\\/g, '/').replace(/^\d+-/, '').replace(/\.twig$/, '');
+
+    const modulePathMatch = componentPath.match(/(.*)\/components/);
+    if (modulePathMatch && modulePathMatch[1]) {
+      const modulePath = modulePathMatch[1];
+      const moduleUri = vscode.Uri.file(modulePath);
+      const moduleFiles = await vscode.workspace.fs.readDirectory(moduleUri);
+      const moduleInfoFile = moduleFiles.find((file) => {
+        return file[0].endsWith(".info.yml");
+      });
+      if (moduleInfoFile) {
+        moduleName = moduleInfoFile[0].replace(/\.info\.yml$/, "");
+      }
+    }
+
     return `${moduleName}:${componentName}`;
   }
 
