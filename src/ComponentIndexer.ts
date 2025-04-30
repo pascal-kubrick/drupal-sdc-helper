@@ -36,7 +36,7 @@ export async function getComponentIndex(): Promise<Component[]> {
         continue;
       }
 
-      const componentId = getComponentId(componentPath);
+      const componentId = await getComponentId(componentPath);
       if (componentId) {
         components.push({ id: componentId, path: componentPath });
       }
